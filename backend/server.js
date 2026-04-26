@@ -44,6 +44,10 @@ app.use('/api/notifications', notificationRoutes);
 const queueRoutes = require('./routes/queueRoutes');
 app.use('/api/queues', queueRoutes);
 
+// Booking routes
+const bookingRoutes = require('./routes/bookingRoutes');
+app.use('/api/bookings', bookingRoutes);
+
 // Connect to MongoDB and start server
 mongoose.connect(process.env.MONGO_URI, {
   serverSelectionTimeoutMS: 10000,
