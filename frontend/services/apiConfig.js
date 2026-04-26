@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 // UPDATE THIS URL with your actual Railway domain!
 // Example: 'https://your-backend-name.up.railway.app/api'
-const BACKEND_URL = 'http://localhost:5000/api'; 
+const BACKEND_URL = 'https://charismatic-perfection-production-1db9.up.railway.app/api'; 
 
 export const API_URL = Platform.select({
   web: BACKEND_URL,
