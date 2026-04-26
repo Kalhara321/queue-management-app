@@ -8,6 +8,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getAllNotifications, deleteNotification } from '../services/notificationService';
 import { getAllQueues, createQueue, updateQueue, deleteQueue } from '../services/queueService';
 import { getBookings, updateBookingStatus, deleteBooking } from '../services/bookingService';
+import { getUserCount, getCurrentUser } from '../services/authService';
+import SocketService from '../services/socketService';
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -25,12 +27,18 @@ const AdminDashboard = () => {
   const [selectedQueue, setSelectedQueue] = useState<any>(null);
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   const fetchAllData = async () => {
     try {
-      const [annRes, queueRes] = await Promise.all([getAllNotifications(), getAllQueues()]);
+      const [annRes, queueRes, userCountRes] = await Promise.all([
+        getAllNotifications(), 
+        getAllQueues(),
+        getUserCount()
+      ]);
       setAnnouncements(annRes.data || annRes);
       setQueues(queueRes.data || queueRes);
+      setTotalUsers(userCountRes.count);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -40,6 +48,25 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchAllData();
+    
+    // Socket Setup
+    const setupSocket = async () => {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        const id = currentUser._id || currentUser.id;
+        SocketService.connect(id);
+        
+        SocketService.on('user-count-update', (newCount: number) => {
+          setTotalUsers(newCount);
+        });
+      }
+    };
+    
+    setupSocket();
+    
+    return () => {
+      SocketService.off('user-count-update');
+    };
   }, []);
 
   const handleEdit = (item: any) => {
@@ -200,7 +227,7 @@ const AdminDashboard = () => {
                 <View style={[styles.statIcon, { backgroundColor: '#4CAF50' + '22' }]}>
                   <MaterialCommunityIcons name="account-group" size={24} color="#4CAF50" />
                 </View>
-                <Text style={[styles.statValue, { color: theme.colors.text }]}>154</Text>
+                <Text style={[styles.statValue, { color: theme.colors.text }]}>{totalUsers}</Text>
                 <Text style={[styles.statLabel, { color: theme.colors.subText }]}>Total Users</Text>
               </View>
 

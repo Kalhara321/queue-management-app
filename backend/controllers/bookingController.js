@@ -103,6 +103,24 @@ exports.updateBooking = async (req, res) => {
       if (queue) {
         queue.members = queue.members.filter(m => m.toString() !== booking.user.toString());
         await queue.save();
+
+        // BROADCAST: Find the next person in line and notify them
+        const nextBooking = await Booking.findOne({
+          queue: queue._id,
+          status: 'waiting',
+          tokenNumber: { $gt: booking.tokenNumber }
+        }).sort({ tokenNumber: 1 });
+
+        if (nextBooking) {
+          console.log(`Notifying user ${nextBooking.user.toString()} they are next in line...`);
+          const io = req.app.get('socketio');
+          io.to(nextBooking.user.toString()).emit('next-in-line', {
+            queueName: queue.name,
+            tokenNumber: nextBooking.tokenNumber
+          });
+        } else {
+          console.log('No more people waiting in this queue.');
+        }
       }
     }
 

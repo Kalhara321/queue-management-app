@@ -10,6 +10,9 @@ import { getCurrentUser } from '../services/authService';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity, Alert, Platform } from 'react-native';
 
+import SocketService from '../services/socketService';
+import NextInLineModal from '../components/NextInLineModal';
+
 const UserDashboard = () => {
   const { theme } = useTheme();
   const [announcements, setAnnouncements] = useState([]);
@@ -18,6 +21,10 @@ const UserDashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Notification Modal State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [notificationData, setNotificationData] = useState({ queueName: '', tokenNumber: 0 });
 
   const fetchAllData = async () => {
     try {
@@ -43,6 +50,27 @@ const UserDashboard = () => {
 
   useEffect(() => {
     fetchAllData();
+
+    // Socket Connection
+    const setupSocket = async () => {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        const id = currentUser._id || currentUser.id;
+        SocketService.connect(id);
+        
+        SocketService.on('next-in-line', (data: any) => {
+          setNotificationData(data);
+          setModalVisible(true);
+          fetchAllData(); // Refresh list to show updated status if any
+        });
+      }
+    };
+
+    setupSocket();
+
+    return () => {
+      SocketService.disconnect();
+    };
   }, []);
 
   const handleJoinQueue = async (queueId: string) => {
@@ -88,6 +116,12 @@ const UserDashboard = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Navbar />
+      <NextInLineModal 
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        queueName={notificationData.queueName}
+        tokenNumber={notificationData.tokenNumber}
+      />
       <ScrollView 
         contentContainerStyle={styles.content}
         refreshControl={

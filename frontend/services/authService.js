@@ -34,7 +34,17 @@ export const logout = async () => {
   await AsyncStorage.removeItem('user');
 };
 
+export const getUserCount = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/auth/user-count`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getCurrentUser = async () => {
+// ... existing code ...
   const user = await AsyncStorage.getItem('user');
   return user ? JSON.parse(user) : null;
 };
