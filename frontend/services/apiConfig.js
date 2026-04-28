@@ -1,10 +1,7 @@
-// AUTO-DETECT: Use localhost for development, Railway for production
-const isProduction = false; // Set to true when you build the final app
-
-const DEV_URL = 'http://localhost:5002/api';
+// Uses environment variable for flexibility, falls back to Railway production URL
 const PROD_URL = 'https://charismatic-perfection-production-1db9.up.railway.app/api';
 
-const BACKEND_URL = isProduction ? PROD_URL : DEV_URL;
+const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL || PROD_URL;
 
 export const API_URL = BACKEND_URL;
 
