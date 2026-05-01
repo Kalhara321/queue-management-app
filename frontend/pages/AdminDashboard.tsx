@@ -7,6 +7,9 @@ import Navbar from '../components/Navbar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getAllNotifications, deleteNotification } from '../services/notificationService';
 import { getAllQueues, createQueue, updateQueue, deleteQueue } from '../services/queueService';
+import { getBookings, updateBookingStatus, deleteBooking } from '../services/bookingService';
+import { getUserCount, getCurrentUser } from '../services/authService';
+import SocketService from '../services/socketService';
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -20,12 +23,22 @@ const AdminDashboard = () => {
   const [queueName, setQueueName] = useState('');
   const [queueDetails, setQueueDetails] = useState('');
   const [modalError, setModalError] = useState('');
+  const [showBookingsModal, setShowBookingsModal] = useState(false);
+  const [selectedQueue, setSelectedQueue] = useState<any>(null);
+  const [bookings, setBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   const fetchAllData = async () => {
     try {
-      const [annRes, queueRes] = await Promise.all([getAllNotifications(), getAllQueues()]);
+      const [annRes, queueRes, userCountRes] = await Promise.all([
+        getAllNotifications(), 
+        getAllQueues(),
+        getUserCount()
+      ]);
       setAnnouncements(annRes.data || annRes);
       setQueues(queueRes.data || queueRes);
+      setTotalUsers(userCountRes.count);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -35,6 +48,25 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchAllData();
+    
+    // Socket Setup
+    const setupSocket = async () => {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        const id = currentUser._id || currentUser.id;
+        SocketService.connect(id);
+        
+        SocketService.on('user-count-update', (newCount: number) => {
+          setTotalUsers(newCount);
+        });
+      }
+    };
+    
+    setupSocket();
+    
+    return () => {
+      SocketService.off('user-count-update');
+    };
   }, []);
 
   const handleEdit = (item: any) => {
@@ -132,6 +164,44 @@ const AdminDashboard = () => {
     }
   };
 
+  const openBookingsModal = async (queue: any) => {
+    setSelectedQueue(queue);
+    setShowBookingsModal(true);
+    setLoadingBookings(true);
+    try {
+      const response = await getBookings({ queueId: queue._id });
+      setBookings(response.data || response);
+    } catch (error) {
+      console.error('Failed to fetch bookings:', error);
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
+  const handleUpdateBookingStatus = async (bookingId: string, status: string) => {
+    try {
+      await updateBookingStatus(bookingId, status);
+      // Refresh bookings list
+      const response = await getBookings({ queueId: selectedQueue._id });
+      setBookings(response.data || response);
+    } catch (error) {
+      console.error('Failed to update booking:', error);
+    }
+  };
+
+  const handleDeleteBooking = async (bookingId: string) => {
+    if (Platform.OS === 'web' && !window.confirm('Remove this booking?')) return;
+    
+    try {
+      await deleteBooking(bookingId);
+      // Refresh
+      const response = await getBookings({ queueId: selectedQueue._id });
+      setBookings(response.data || response);
+    } catch (error) {
+      console.error('Failed to delete booking:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.layout}>
@@ -157,7 +227,7 @@ const AdminDashboard = () => {
                 <View style={[styles.statIcon, { backgroundColor: '#4CAF50' + '22' }]}>
                   <MaterialCommunityIcons name="account-group" size={24} color="#4CAF50" />
                 </View>
-                <Text style={[styles.statValue, { color: theme.colors.text }]}>154</Text>
+                <Text style={[styles.statValue, { color: theme.colors.text }]}>{totalUsers}</Text>
                 <Text style={[styles.statLabel, { color: theme.colors.subText }]}>Total Users</Text>
               </View>
 
@@ -198,6 +268,9 @@ const AdminDashboard = () => {
                       <Text style={[styles.itemDate, { color: theme.colors.subText }]}>{item.members?.length || 0} People in Queue</Text>
                     </View>
                     <View style={styles.actionButtons}>
+                      <TouchableOpacity onPress={() => openBookingsModal(item)} style={styles.manageBtn}>
+                        <MaterialCommunityIcons name="account-group" size={22} color="#4CAF50" />
+                      </TouchableOpacity>
                       <TouchableOpacity onPress={() => openEditModal(item)} style={styles.editBtn}>
                         <MaterialCommunityIcons name="pencil-outline" size={22} color="#FF9800" />
                       </TouchableOpacity>
@@ -271,6 +344,58 @@ const AdminDashboard = () => {
                 <Text style={{ color: 'white', fontWeight: 'bold' }}>{isEditingQueue ? 'Update' : 'Create'}</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showBookingsModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.card, maxWidth: 600 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Manage: {selectedQueue?.name}</Text>
+              <TouchableOpacity onPress={() => setShowBookingsModal(false)}>
+                <MaterialCommunityIcons name="close" size={24} color={theme.colors.subText} />
+              </TouchableOpacity>
+            </View>
+
+            {loadingBookings ? (
+              <ActivityIndicator size="large" />
+            ) : bookings.length === 0 ? (
+              <Text style={{ color: theme.colors.subText, textAlign: 'center', padding: 20 }}>No active bookings for this queue.</Text>
+            ) : (
+              <ScrollView style={{ maxHeight: 400 }}>
+                {bookings.map((booking: any) => (
+                  <View key={booking._id} style={[styles.bookingItem, { borderBottomColor: theme.colors.subText + '22' }]}>
+                    <View style={styles.bookingMain}>
+                      <Text style={[styles.tokenNum, { color: theme.colors.iconWrapBg }]}>#{booking.tokenNumber}</Text>
+                      <View>
+                        <Text style={[styles.userName, { color: theme.colors.text }]}>{booking.user?.username}</Text>
+                        <Text style={[styles.statusBadge, { color: booking.status === 'waiting' ? '#FFA500' : booking.status === 'served' ? '#4CAF50' : '#F44336' }]}>
+                          {booking.status.toUpperCase()}
+                        </Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.bookingActions}>
+                      {booking.status === 'waiting' && (
+                        <TouchableOpacity 
+                          onPress={() => handleUpdateBookingStatus(booking._id, 'served')}
+                          style={[styles.actionBtn, { backgroundColor: '#4CAF50' }]}
+                        >
+                          <Text style={styles.actionBtnText}>Serve</Text>
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity 
+                        onPress={() => handleDeleteBooking(booking._id)}
+                        style={[styles.actionBtn, { backgroundColor: '#F44336' }]}
+                      >
+                        <Text style={styles.actionBtnText}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
           </View>
         </View>
       </Modal>
@@ -471,6 +596,54 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     flex: 1,
+  },
+  manageBtn: {
+    padding: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  bookingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+  },
+  bookingMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  tokenNum: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  statusBadge: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
+  bookingActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  actionBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  actionBtnText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   }
 });
 

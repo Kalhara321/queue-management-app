@@ -1,11 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { API_URL as BASE_URL } from './apiConfig';
 
-// localhost works on web; Expo Go on a phone needs the LAN IP
-const BASE_URL = Platform.OS === 'web'
-  ? 'http://localhost:5002/api'
-  : 'http://192.168.1.12:5002/api';
 
 // Auto-fetch a dev token if none is stored (uses the /api/test-login route)
 const getHeaders = async () => {

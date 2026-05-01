@@ -1,8 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { API_URL } from './apiConfig';
 
-const API_URL = Platform.OS === 'web' ? 'http://localhost:5002/api' : 'http://10.0.2.2:5002/api';
 
 const getAuthHeaders = async () => {
   const token = await AsyncStorage.getItem('token');

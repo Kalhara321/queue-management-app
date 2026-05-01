@@ -16,13 +16,28 @@ exports.signup = async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
     
+    // Broadcast total user count update
+    const totalUsers = await User.countDocuments();
+    const io = req.app.get('socketio');
+    io.emit('user-count-update', totalUsers);
+
     res.status(201).json({ token, user: { id: user._id, username: user.username, role: user.role } });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+exports.getUserCount = async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.login = async (req, res) => {
+// ... existing login code ...
   try {
     const { email, password } = req.body;
     // Search by email OR username

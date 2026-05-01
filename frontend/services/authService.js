@@ -1,8 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { API_URL } from './apiConfig';
 
-const API_URL = Platform.OS === 'web' ? 'http://localhost:5002/api' : 'http://10.0.2.2:5002/api';
 
 export const login = async (email, password) => {
   try {
@@ -35,7 +34,17 @@ export const logout = async () => {
   await AsyncStorage.removeItem('user');
 };
 
+export const getUserCount = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/auth/user-count`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getCurrentUser = async () => {
+// ... existing code ...
   const user = await AsyncStorage.getItem('user');
   return user ? JSON.parse(user) : null;
 };

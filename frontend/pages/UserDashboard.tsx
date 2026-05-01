@@ -4,22 +4,42 @@ import { useTheme } from '../context/ThemeContext';
 import Navbar from '../components/Navbar';
 import AnnouncementCard from '../components/AnnouncementCard';
 import { getAllNotifications } from '../services/notificationService';
-import { getAllQueues, joinQueue } from '../services/queueService';
+import { getAllQueues } from '../services/queueService';
+import { createBooking, getBookings, deleteBooking } from '../services/bookingService';
+import { getCurrentUser } from '../services/authService';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity, Alert, Platform } from 'react-native';
+
+import SocketService from '../services/socketService';
+import NextInLineModal from '../components/NextInLineModal';
 
 const UserDashboard = () => {
   const { theme } = useTheme();
   const [announcements, setAnnouncements] = useState([]);
   const [queues, setQueues] = useState([]);
+  const [userBookings, setUserBookings] = useState([]);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Notification Modal State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [notificationData, setNotificationData] = useState({ queueName: '', tokenNumber: 0 });
 
   const fetchAllData = async () => {
     try {
-      const [annRes, queueRes] = await Promise.all([getAllNotifications(), getAllQueues()]);
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      
+      const [annRes, queueRes, bookingRes] = await Promise.all([
+        getAllNotifications(), 
+        getAllQueues(),
+        getBookings({ userId: currentUser?._id || currentUser?.id })
+      ]);
+      
       setAnnouncements(annRes.data || annRes);
       setQueues(queueRes.data || queueRes);
+      setUserBookings(bookingRes.data || bookingRes);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -30,18 +50,61 @@ const UserDashboard = () => {
 
   useEffect(() => {
     fetchAllData();
+
+    // Socket Connection
+    const setupSocket = async () => {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        const id = currentUser._id || currentUser.id;
+        SocketService.connect(id);
+        
+        SocketService.on('next-in-line', (data: any) => {
+          setNotificationData(data);
+          setModalVisible(true);
+          fetchAllData(); // Refresh list to show updated status if any
+        });
+      }
+    };
+
+    setupSocket();
+
+    return () => {
+      SocketService.disconnect();
+    };
   }, []);
 
   const handleJoinQueue = async (queueId: string) => {
     try {
-      await joinQueue(queueId);
-      if (Platform.OS === 'web') window.alert('Successfully joined the queue!');
-      else Alert.alert('Success', 'Successfully joined the queue!');
-      fetchAllData(); // Refresh to update member count
+      await createBooking(queueId);
+      if (Platform.OS === 'web') window.alert('Successfully booked a token!');
+      else Alert.alert('Success', 'Successfully booked a token!');
+      fetchAllData(); 
     } catch (error: any) {
-      const msg = error.response?.data?.message || 'Failed to join queue';
+      const msg = error.response?.data?.message || 'Failed to book token';
       if (Platform.OS === 'web') window.alert(msg);
       else Alert.alert('Error', msg);
+    }
+  };
+
+  const handleDeleteToken = async (bookingId: string) => {
+    const performDelete = async () => {
+      try {
+        await deleteBooking(bookingId);
+        fetchAllData();
+      } catch (error: any) {
+        const msg = error.response?.data?.message || 'Failed to cancel token';
+        if (Platform.OS === 'web') window.alert(msg);
+        else Alert.alert('Error', msg);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to cancel this token?')) performDelete();
+    } else {
+      Alert.alert('Confirm Cancel', 'Are you sure you want to cancel this token?', [
+        { text: 'No', style: 'cancel' },
+        { text: 'Yes', style: 'destructive', onPress: performDelete }
+      ]);
     }
   };
 
@@ -53,6 +116,12 @@ const UserDashboard = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Navbar />
+      <NextInLineModal 
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        queueName={notificationData.queueName}
+        tokenNumber={notificationData.tokenNumber}
+      />
       <ScrollView 
         contentContainerStyle={styles.content}
         refreshControl={
@@ -60,9 +129,42 @@ const UserDashboard = () => {
         }
       >
         <View style={styles.welcomeSection}>
-          <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Welcome, User 👋</Text>
-          <Text style={[styles.subtitle, { color: theme.colors.subText }]}>Stay updated with the latest announcements</Text>
+          <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Welcome, {user?.username || 'User'} 👋</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.subText }]}>Manage your tokens and stay updated</Text>
         </View>
+
+        {userBookings.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Your Active Tokens</Text>
+            </View>
+            <View style={styles.tokensList}>
+              {userBookings.map((booking: any) => (
+                <View key={booking._id} style={[styles.tokenCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.iconWrapBg }]}>
+                  <View style={styles.tokenMain}>
+                    <Text style={[styles.tokenNumber, { color: theme.colors.iconWrapBg }]}>#{booking.tokenNumber}</Text>
+                    <View>
+                      <Text style={[styles.tokenQueueName, { color: theme.colors.text }]}>{booking.queue?.name}</Text>
+                      <Text style={[styles.tokenStatus, { color: booking.status === 'waiting' ? '#FFA500' : booking.status === 'served' ? '#4CAF50' : '#F44336' }]}>
+                        {booking.status.toUpperCase()}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={[styles.tokenDate, { color: theme.colors.subText, marginBottom: 5 }]}>
+                      {new Date(booking.createdAt).toLocaleDateString()}
+                    </Text>
+                    {booking.status === 'waiting' && (
+                      <TouchableOpacity onPress={() => handleDeleteToken(booking._id)}>
+                        <MaterialCommunityIcons name="delete-outline" size={20} color="#F44336" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Active Queues</Text>
@@ -156,6 +258,42 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  tokensList: {
+    gap: 12,
+    marginBottom: 30,
+  },
+  tokenCard: {
+    padding: 15,
+    borderRadius: 12,
+    borderLeftWidth: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    ...Platform.select({
+      web: { boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }
+    })
+  },
+  tokenMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  tokenNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  tokenQueueName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  tokenStatus: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
+  tokenDate: {
+    fontSize: 12,
   },
   queuesGrid: {
     gap: 15,
