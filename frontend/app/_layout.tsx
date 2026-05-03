@@ -1,21 +1,12 @@
 // @ts-nocheck
-import { Stack, Head } from 'expo-router';
+import { Stack } from 'expo-router';
 import { ThemeProvider } from '../context/ThemeContext';
 import { ToastProvider } from '../context/ToastContext';
-import { useServiceWorker } from '../hooks/useServiceWorker';
 
 export default function Layout() {
-  useServiceWorker();
-
   return (
     <ThemeProvider>
       <ToastProvider>
-        <Head>
-          <title>Queue Manager</title>
-          <meta name="theme-color" content="#6C63FF" />
-          <link rel="manifest" href="/manifest.json" />
-          <link rel="apple-touch-icon" href="/assets/images/icon.png" />
-        </Head>
         <Stack>
           <Stack.Screen name="index" options={{ title: 'Notifications 🔔', headerShown: false }} />
           <Stack.Screen name="CreateNotification" options={{ title: 'Create Notification' }} />
