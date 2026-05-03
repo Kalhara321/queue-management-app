@@ -6,6 +6,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/(sw.js|manifest.json)",
+      "destination": "/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

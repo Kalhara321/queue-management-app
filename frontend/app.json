@@ -23,7 +23,15 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Queue Manager",
+      "shortName": "QueueMgr",
+      "description": "Smart Queue Management System",
+      "themeColor": "#6C63FF",
+      "backgroundColor": "#151718",
+      "display": "standalone",
+      "orientation": "portrait",
+      "icon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",
