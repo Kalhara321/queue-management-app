@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -20,6 +21,7 @@ const CreateAnnouncement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { theme } = useTheme();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (isEditing) {
@@ -31,21 +33,15 @@ const CreateAnnouncement = () => {
 
   const handleSubmit = async () => {
     if (!title || !message) {
-      const msg = 'Please fill in both title and message';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Error', msg);
+      showToast('Please fill in both title and message', 'error');
       return;
     }
     if (title.length < 3) {
-      const msg = 'Title must be at least 3 characters long';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Error', msg);
+      showToast('Title must be at least 3 characters long', 'error');
       return;
     }
     if (message.length < 5) {
-      const msg = 'Message must be at least 5 characters long';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Error', msg);
+      showToast('Message must be at least 5 characters long', 'error');
       return;
     }
 
@@ -53,20 +49,17 @@ const CreateAnnouncement = () => {
     try {
       if (isEditing) {
         await updateNotification(id as string, { title, message, type });
-        if (Platform.OS === 'web') window.alert('Announcement updated successfully');
-        else Alert.alert('Success', 'Announcement updated successfully');
+        showToast('Announcement updated successfully', 'success');
       } else {
         await createNotification({ title, message, type });
-        if (Platform.OS === 'web') window.alert('Announcement created successfully');
-        else Alert.alert('Success', 'Announcement created successfully');
+        showToast('Announcement created successfully', 'success');
       }
       
       router.push('/admin');
     } catch (error) {
       console.error('Operation failed:', error);
       const action = isEditing ? 'update' : 'create';
-      if (Platform.OS === 'web') window.alert(`Failed to ${action} announcement`);
-      else Alert.alert('Error', `Failed to ${action} announcement`);
+      showToast(`Failed to ${action} announcement`, 'error');
     } finally {
       setIsSubmitting(false);
     }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform, ScrollView, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -14,6 +15,7 @@ import SocketService from '../services/socketService';
 const AdminDashboard = () => {
   const router = useRouter();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const [announcements, setAnnouncements] = useState([]);
   const [queues, setQueues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -85,10 +87,11 @@ const AdminDashboard = () => {
     const performDelete = async () => {
       try {
         await deleteNotification(id);
+        showToast('Announcement deleted', 'success');
         fetchAllData();
       } catch (error) {
         console.error('Failed to delete:', error);
-        if (Platform.OS === 'web') window.alert('Failed to delete');
+        showToast('Failed to delete', 'error');
       }
     };
 

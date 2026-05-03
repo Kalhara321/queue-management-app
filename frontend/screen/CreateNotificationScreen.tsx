@@ -6,9 +6,11 @@ import {
 } from 'react-native';
 import { createNotification, updateNotification } from '../services/notificationService';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 
 export default function CreateNotificationScreen({ route, navigation }) {
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const existing = route.params?.notification;
 
   const [title, setTitle] = useState(existing?.title || '');
@@ -17,29 +19,29 @@ export default function CreateNotificationScreen({ route, navigation }) {
 
   const handleSubmit = async () => {
     if (!title || !message) {
-      Alert.alert('Validation', 'Title and message are required');
+      showToast('Title and message are required', 'error');
       return;
     }
     if (title.length < 3) {
-      Alert.alert('Validation', 'Title must be at least 3 characters long');
+      showToast('Title must be at least 3 characters long', 'error');
       return;
     }
     if (message.length < 5) {
-      Alert.alert('Validation', 'Message must be at least 5 characters long');
+      showToast('Message must be at least 5 characters long', 'error');
       return;
     }
 
     try {
       if (existing) {
         await updateNotification(existing._id, { title, message, type });
-        Alert.alert('Success', 'Notification updated!');
+        showToast('Notification updated!', 'success');
       } else {
         await createNotification({ title, message, type, targetAudience: 'all' });
-        Alert.alert('Success', 'Notification created!');
+        showToast('Notification created!', 'success');
       }
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong');
+      showToast('Something went wrong', 'error');
     }
   };
 

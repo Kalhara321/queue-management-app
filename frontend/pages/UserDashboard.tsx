@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator, RefreshControl } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import Navbar from '../components/Navbar';
 import AnnouncementCard from '../components/AnnouncementCard';
 import { getAllNotifications } from '../services/notificationService';
@@ -15,6 +16,7 @@ import NextInLineModal from '../components/NextInLineModal';
 
 const UserDashboard = () => {
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const [announcements, setAnnouncements] = useState([]);
   const [queues, setQueues] = useState([]);
   const [userBookings, setUserBookings] = useState([]);
@@ -76,13 +78,11 @@ const UserDashboard = () => {
   const handleJoinQueue = async (queueId: string) => {
     try {
       await createBooking(queueId);
-      if (Platform.OS === 'web') window.alert('Successfully booked a token!');
-      else Alert.alert('Success', 'Successfully booked a token!');
+      showToast('Successfully booked a token!', 'success');
       fetchAllData(); 
     } catch (error: any) {
       const msg = error.response?.data?.message || 'Failed to book token';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Error', msg);
+      showToast(msg, 'error');
     }
   };
 
@@ -90,11 +90,11 @@ const UserDashboard = () => {
     const performDelete = async () => {
       try {
         await deleteBooking(bookingId);
+        showToast('Token cancelled successfully', 'success');
         fetchAllData();
       } catch (error: any) {
         const msg = error.response?.data?.message || 'Failed to cancel token';
-        if (Platform.OS === 'web') window.alert(msg);
-        else Alert.alert('Error', msg);
+        showToast(msg, 'error');
       }
     };
 

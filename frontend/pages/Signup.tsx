@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { signup } from '../services/authService';
 
@@ -15,6 +16,7 @@ const Signup = () => {
   
   const router = useRouter();
   const { theme } = useTheme();
+  const { showToast } = useToast();
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -46,7 +48,7 @@ const Signup = () => {
     setLoading(true);
     try {
       await signup(username, email, password, 'user');
-      if (Platform.OS === 'web') window.alert('Account created successfully!');
+      showToast('Account created successfully!', 'success');
       router.replace('/dashboard');
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Signup failed';
