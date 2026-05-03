@@ -7,6 +7,8 @@ import {
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { getAllNotifications, deleteNotification } from '../services/notificationService';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const TYPE_CONFIG = {
   announcement: { color: '#6C63FF', bg: '#EDE9FF', icon: 'megaphone', lib: 'Ionicons' },
@@ -36,6 +38,7 @@ function TypeBadge({ type }) {
 
 export default function NotificationListScreen({ navigation }) {
   const { isDarkMode, toggleTheme, theme } = useTheme();
+  const { showToast } = useToast();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,11 +47,7 @@ export default function NotificationListScreen({ navigation }) {
       const res = await getAllNotifications();
       setNotifications(res.data);
     } catch (error) {
-      if (Platform.OS === 'web') {
-        window.alert('Failed to load notifications');
-      } else {
-        Alert.alert('Error', 'Failed to load notifications');
-      }
+      showToast('Failed to load notifications', 'error');
     } finally {
       setLoading(false);
     }
@@ -77,13 +76,10 @@ export default function NotificationListScreen({ navigation }) {
     if (!itemToDelete) return;
     try {
       await deleteNotification(itemToDelete);
+      showToast('Notification deleted', 'success');
       fetchNotifications();
     } catch (error) {
-      if (Platform.OS === 'web') {
-        window.alert('Failed to delete notification');
-      } else {
-        Alert.alert('Error', 'Failed to delete');
-      }
+      showToast('Failed to delete notification', 'error');
     } finally {
       setItemToDelete(null);
     }
@@ -143,23 +139,17 @@ export default function NotificationListScreen({ navigation }) {
 
   return (
     <View style={[styles.container, dynamicStyles.container]}>
-      {itemToDelete && (
-        <View style={dynamicStyles.modalOverlay}>
-          <View style={dynamicStyles.modalContent}>
-            <Ionicons name="trash-outline" size={48} color="#EF4444" style={{marginBottom: 16}} />
-            <Text style={dynamicStyles.modalTitle}>Delete Notification?</Text>
-            <Text style={dynamicStyles.modalSub}>This action cannot be undone. Are you sure you want to completely remove this notification?</Text>
-            <View style={dynamicStyles.modalActions}>
-              <TouchableOpacity onPress={cancelDelete} style={dynamicStyles.modalCancel}>
-                <Text style={dynamicStyles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={confirmDelete} style={dynamicStyles.modalConfirm}>
-                <Text style={dynamicStyles.modalConfirmText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
+      <ConfirmDialog
+        visible={!!itemToDelete}
+        title="Delete Notification?"
+        message="This action cannot be undone. Are you sure you want to completely remove this notification?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="#EF4444"
+        icon="trash-can-outline"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
 
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={theme.colors.headerBackground} />
 

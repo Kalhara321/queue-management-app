@@ -11,6 +11,7 @@ import { getAllQueues, createQueue, updateQueue, deleteQueue } from '../services
 import { getBookings, updateBookingStatus, deleteBooking } from '../services/bookingService';
 import { getUserCount, getCurrentUser } from '../services/authService';
 import SocketService from '../services/socketService';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -30,6 +31,17 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ visible: false, title: '', message: '', onConfirm: () => {} });
+
+  const showConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmDialog({ visible: true, title, message, onConfirm });
+  };
+  const hideConfirm = () => setConfirmDialog(prev => ({ ...prev, visible: false }));
 
   const fetchAllData = async () => {
     try {
@@ -96,14 +108,13 @@ const AdminDashboard = () => {
     };
 
     if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to delete this announcement?')) {
-        performDelete();
-      }
+      showConfirm(
+        'Delete Announcement',
+        'Are you sure you want to delete this announcement?',
+        performDelete
+      );
     } else {
-      Alert.alert('Confirm Delete', 'Are you sure?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: performDelete }
-      ]);
+      showConfirm('Delete Announcement', 'Are you sure?', performDelete);
     }
   };
 
@@ -167,12 +178,9 @@ const AdminDashboard = () => {
     };
 
     if (Platform.OS === 'web') {
-      if (window.confirm('Delete this queue? All data will be lost.')) performDelete();
+      showConfirm('Delete Queue', 'Delete this queue? All data will be lost.', performDelete);
     } else {
-      Alert.alert('Confirm Delete', 'Delete this queue?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: performDelete }
-      ]);
+      showConfirm('Delete Queue', 'Delete this queue? All data will be lost.', performDelete);
     }
   };
 
@@ -202,20 +210,33 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteBooking = async (bookingId: string) => {
-    if (Platform.OS === 'web' && !window.confirm('Remove this booking?')) return;
-    
-    try {
-      await deleteBooking(bookingId);
-      // Refresh
-      const response = await getBookings({ queueId: selectedQueue._id });
-      setBookings(response.data || response);
-    } catch (error) {
-      console.error('Failed to delete booking:', error);
-    }
+    const doDelete = async () => {
+      try {
+        await deleteBooking(bookingId);
+        const response = await getBookings({ queueId: selectedQueue._id });
+        setBookings(response.data || response);
+        showToast('Booking removed', 'success');
+      } catch (error) {
+        console.error('Failed to delete booking:', error);
+        showToast('Failed to remove booking', 'error');
+      }
+    };
+    showConfirm('Remove Booking', 'Are you sure you want to remove this booking?', doDelete);
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <ConfirmDialog
+        visible={confirmDialog.visible}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="#FF4B4B"
+        icon="trash-can-outline"
+        onConfirm={() => { hideConfirm(); confirmDialog.onConfirm(); }}
+        onCancel={hideConfirm}
+      />
       <View style={styles.layout}>
         {Platform.OS === 'web' && <Sidebar />}
         <View style={styles.mainContent}>

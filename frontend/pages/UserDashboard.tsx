@@ -13,6 +13,7 @@ import { TouchableOpacity, Alert, Platform } from 'react-native';
 
 import SocketService from '../services/socketService';
 import NextInLineModal from '../components/NextInLineModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const UserDashboard = () => {
   const { theme } = useTheme();
@@ -27,6 +28,8 @@ const UserDashboard = () => {
   // Notification Modal State
   const [modalVisible, setModalVisible] = useState(false);
   const [notificationData, setNotificationData] = useState({ queueName: '', tokenNumber: 0 });
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const fetchAllData = async () => {
     try {
@@ -87,24 +90,22 @@ const UserDashboard = () => {
   };
 
   const handleDeleteToken = async (bookingId: string) => {
-    const performDelete = async () => {
-      try {
-        await deleteBooking(bookingId);
-        showToast('Token cancelled successfully', 'success');
-        fetchAllData();
-      } catch (error: any) {
-        const msg = error.response?.data?.message || 'Failed to cancel token';
-        showToast(msg, 'error');
-      }
-    };
+    setPendingDeleteId(bookingId);
+    setConfirmVisible(true);
+  };
 
-    if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to cancel this token?')) performDelete();
-    } else {
-      Alert.alert('Confirm Cancel', 'Are you sure you want to cancel this token?', [
-        { text: 'No', style: 'cancel' },
-        { text: 'Yes', style: 'destructive', onPress: performDelete }
-      ]);
+  const performDelete = async () => {
+    if (!pendingDeleteId) return;
+    try {
+      await deleteBooking(pendingDeleteId);
+      showToast('Token cancelled successfully', 'success');
+      fetchAllData();
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'Failed to cancel token';
+      showToast(msg, 'error');
+    } finally {
+      setConfirmVisible(false);
+      setPendingDeleteId(null);
     }
   };
 
@@ -121,6 +122,17 @@ const UserDashboard = () => {
         onClose={() => setModalVisible(false)}
         queueName={notificationData.queueName}
         tokenNumber={notificationData.tokenNumber}
+      />
+      <ConfirmDialog
+        visible={confirmVisible}
+        title="Cancel Token?"
+        message="Are you sure you want to cancel this token? This action cannot be undone."
+        confirmText="Yes, Cancel"
+        cancelText="Keep It"
+        confirmColor="#FF4B4B"
+        icon="ticket-confirmation-outline"
+        onConfirm={performDelete}
+        onCancel={() => { setConfirmVisible(false); setPendingDeleteId(null); }}
       />
       <ScrollView 
         contentContainerStyle={styles.content}
