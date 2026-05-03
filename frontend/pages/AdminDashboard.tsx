@@ -224,7 +224,7 @@ const AdminDashboard = () => {
             </View>
 
             <View style={styles.statsGrid}>
-              <View style={[styles.statCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
+              <View style={[styles.statCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }, theme.glassBlur]}>
                 <View style={[styles.statIcon, { backgroundColor: theme.colors.iconWrapBg + '22' }]}>
                   <MaterialCommunityIcons name="bullhorn" size={24} color={theme.colors.iconWrapBg} />
                 </View>
@@ -249,7 +249,7 @@ const AdminDashboard = () => {
               </View>
             </View>
 
-            <View style={[styles.actionCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
+            <View style={[styles.actionCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }, theme.glassBlur]}>
               <View style={styles.actionInfo}>
                 <Text style={[styles.actionTitle, { color: theme.colors.text }]}>Manage Queues</Text>
                 <Text style={[styles.actionDesc, { color: theme.colors.subText }]}>Create a new queue and define its purpose for patients.</Text>
@@ -271,7 +271,7 @@ const AdminDashboard = () => {
                 <Text style={{ color: theme.colors.subText }}>No active queues.</Text>
               ) : (
                 queues.map((item: any) => (
-                  <View key={item._id} style={[styles.listItem, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, borderLeftColor: '#FF9800', borderLeftWidth: 4 }]}>
+                  <View key={item._id} style={[styles.listItem, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, borderLeftColor: '#FF9800', borderLeftWidth: 4 }, theme.glassBlur]}>
                     <View style={styles.listItemContent}>
                       <Text style={[styles.itemTitle, { color: theme.colors.text }]}>{item.name}</Text>
                       <Text style={[styles.itemDate, { color: theme.colors.subText }]}>{item.members?.length || 0} People in Queue</Text>
@@ -298,7 +298,7 @@ const AdminDashboard = () => {
                 <ActivityIndicator size="large" color={theme.colors.iconWrapBg} />
               ) : (
                 announcements.map((item: any) => (
-                  <View key={item._id} style={[styles.listItem, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, borderLeftColor: theme.colors.iconWrapBg, borderLeftWidth: 4 }]}>
+                  <View key={item._id} style={[styles.listItem, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, borderLeftColor: theme.colors.iconWrapBg, borderLeftWidth: 4 }, theme.glassBlur]}>
                     <View style={styles.listItemContent}>
                       <Text style={[styles.itemTitle, { color: theme.colors.text }]} numberOfLines={1}>{item.title}</Text>
                       <Text style={[styles.itemDate, { color: theme.colors.subText }]}>{new Date(item.createdAt).toLocaleDateString()}</Text>
@@ -455,8 +455,6 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: { 
         boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
       },
       android: { elevation: 3 },
       ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 }
@@ -533,8 +531,6 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: { 
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
       }
     })
   },
@@ -567,8 +563,6 @@ const styles = StyleSheet.create({
     padding: 20,
     ...Platform.select({
       web: {
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
       }
     })
   },

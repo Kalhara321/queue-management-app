@@ -16,7 +16,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <View style={[styles.sidebar, { backgroundColor: theme.colors.glassCard, borderRightColor: theme.colors.glassBorder }]}>
+    <View style={[styles.sidebar, { backgroundColor: theme.colors.glassCard, borderRightColor: theme.colors.glassBorder }, theme.glassBlur]}>
       <View style={styles.header}>
         <MaterialCommunityIcons name="shield-account" size={32} color={theme.colors.iconWrapBg} />
         <Text style={[styles.adminLabel, { color: theme.colors.text }]}>Admin Panel</Text>
@@ -73,12 +73,6 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     padding: 20,
     justifyContent: 'space-between',
-    ...(Platform.select({
-      web: {
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-      }
-    }) as any)
   },
   header: {
     flexDirection: 'row',

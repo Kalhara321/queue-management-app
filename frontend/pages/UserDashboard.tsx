@@ -140,7 +140,7 @@ const UserDashboard = () => {
             </View>
             <View style={styles.tokensList}>
               {userBookings.map((booking: any) => (
-                <View key={booking._id} style={[styles.tokenCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, borderLeftColor: theme.colors.iconWrapBg, borderLeftWidth: 5 }]}>
+                <View key={booking._id} style={[styles.tokenCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, borderLeftColor: theme.colors.iconWrapBg, borderLeftWidth: 5 }, theme.glassBlur]}>
                   <View style={styles.tokenMain}>
                     <Text style={[styles.tokenNumber, { color: theme.colors.iconWrapBg }]}>#{booking.tokenNumber}</Text>
                     <View>
@@ -177,7 +177,7 @@ const UserDashboard = () => {
         ) : (
           <View style={styles.queuesGrid}>
             {queues.map((item: any) => (
-              <View key={item._id} style={[styles.queueCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
+              <View key={item._id} style={[styles.queueCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }, theme.glassBlur]}>
                 <View style={styles.queueInfo}>
                   <Text style={[styles.queueName, { color: theme.colors.text }]}>{item.name}</Text>
                   <Text style={[styles.queueDetails, { color: theme.colors.subText }]}>{item.details}</Text>
@@ -273,8 +273,6 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: { 
         boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
       }
     })
   },
@@ -312,8 +310,6 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: { 
         boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
       }
     })
   },

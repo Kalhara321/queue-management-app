@@ -13,7 +13,7 @@ const AnnouncementCard = ({ title, message, date }: AnnouncementCardProps) => {
   const { theme } = useTheme();
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder }]}>
+    <View style={[styles.card, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder }, theme.glassBlur]}>
       <View style={styles.header}>
         <View style={[styles.iconContainer, { backgroundColor: theme.colors.iconWrapBg + '22' }]}>
           <MaterialCommunityIcons name="bullhorn" size={20} color={theme.colors.iconWrapBg} />
@@ -49,8 +49,6 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
         transition: 'all 0.3s ease',
         cursor: 'pointer',
       },

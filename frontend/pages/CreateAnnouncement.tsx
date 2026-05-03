@@ -88,7 +88,7 @@ const CreateAnnouncement = () => {
               </Text>
             </View>
 
-            <View style={[styles.card, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
+            <View style={[styles.card, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }, theme.glassBlur]}>
               <View style={styles.form}>
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { color: theme.colors.text }]}>Announcement Title</Text>
@@ -207,8 +207,6 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: { 
         boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
       },
       android: { elevation: 6 },
       ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 15 }

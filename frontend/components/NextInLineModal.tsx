@@ -19,8 +19,8 @@ const NextInLineModal = ({ visible, onClose, queueName, tokenNumber }: NextInLin
       visible={visible}
       animationType="fade"
     >
-      <View style={styles.overlay}>
-        <View style={[styles.modalContent, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
+      <View style={[styles.overlay, theme.glassBlur]}>
+        <View style={[styles.modalContent, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }, theme.glassBlur]}>
           <View style={[styles.iconCircle, { backgroundColor: theme.colors.iconWrapBg, borderColor: theme.colors.glassCard }]}>
             <MaterialCommunityIcons name="bell-ring" size={40} color="white" />
           </View>
@@ -60,8 +60,6 @@ const styles = StyleSheet.create({
     padding: 20,
     ...Platform.select({
       web: {
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
       }
     })
   },
@@ -78,8 +76,6 @@ const styles = StyleSheet.create({
     elevation: 10,
     ...Platform.select({
       web: {
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
       }
     })
   },

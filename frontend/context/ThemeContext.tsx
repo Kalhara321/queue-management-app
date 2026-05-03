@@ -39,8 +39,8 @@ export const ThemeProvider = ({ children }: any) => {
     colors: isDarkMode ? {
       background: '#0F0A2A',
       card: '#1E1347',
-      glassCard: 'rgba(30, 19, 71, 0.75)',
-      glassBorder: 'rgba(255, 255, 255, 0.12)',
+      glassCard: 'rgba(30, 19, 71, 0.45)',
+      glassBorder: 'rgba(255, 255, 255, 0.15)',
       text: '#F0EAFF',
       subText: '#9B8EC4',
       headerBackground: '#1A1040',
@@ -53,8 +53,8 @@ export const ThemeProvider = ({ children }: any) => {
     } : {
       background: '#F9FAFB',
       card: '#FFFFFF',
-      glassCard: 'rgba(255, 255, 255, 0.75)',
-      glassBorder: 'rgba(255, 255, 255, 0.4)',
+      glassCard: 'rgba(255, 255, 255, 0.45)',
+      glassBorder: 'rgba(255, 255, 255, 0.5)',
       text: '#111827',
       subText: '#4B5563',
       headerBackground: '#FFFFFF',
@@ -64,7 +64,11 @@ export const ThemeProvider = ({ children }: any) => {
       emptyStateText: '#6B7280',
       editBtnBg: '#E0F2FE',
       deleteBtnBg: '#FEE2E2',
-    }
+    },
+    glassBlur: Platform.OS === 'web' ? {
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+    } : {},
   };
 
   return (

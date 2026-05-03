@@ -64,7 +64,8 @@ const Login = () => {
           backgroundColor: theme.colors.glassCard,
           borderColor: theme.colors.glassBorder,
           borderWidth: 1,
-        }
+        },
+        theme.glassBlur
       ]}>
         <View style={styles.header}>
           <View style={[styles.logoIcon, { backgroundColor: theme.colors.iconWrapBg }]}>
@@ -167,8 +168,6 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
       },
     }),
   },

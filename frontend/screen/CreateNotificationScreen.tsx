@@ -66,7 +66,7 @@ export default function CreateNotificationScreen({ route, navigation }) {
     <ScrollView contentContainerStyle={[styles.container, dynamicStyles.container]}>
       <Text style={[styles.label, dynamicStyles.label]}>Title *</Text>
       <TextInput
-        style={[styles.input, dynamicStyles.input]}
+        style={[styles.input, dynamicStyles.input, theme.glassBlur]}
         value={title}
         onChangeText={setTitle}
         placeholder="Enter title"
@@ -75,7 +75,7 @@ export default function CreateNotificationScreen({ route, navigation }) {
 
       <Text style={[styles.label, dynamicStyles.label]}>Message *</Text>
       <TextInput
-        style={[styles.input, dynamicStyles.input, { height: 100 }]}
+        style={[styles.input, dynamicStyles.input, { height: 100 }, theme.glassBlur]}
         value={message}
         onChangeText={setMessage}
         placeholder="Enter message"
@@ -93,7 +93,8 @@ export default function CreateNotificationScreen({ route, navigation }) {
               style={[
                 styles.typeButton, 
                 dynamicStyles.typeButton,
-                isSelected && styles.typeSelected
+                isSelected && styles.typeSelected,
+                theme.glassBlur
               ]}
               onPress={() => setType(t)}
             >
