@@ -23,23 +23,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png",
-      "name": "Queue Manager",
-      "shortName": "QueueMgr",
-      "description": "A smart queue management system to streamline your waiting experience.",
-      "lang": "en",
-      "scope": "/",
-      "themeColor": "#6C63FF",
-      "backgroundColor": "#151718",
-      "startUrl": "/login",
-      "display": "standalone",
-      "orientation": "portrait",
-      "icon": "./assets/images/icon.png",
-      "splash": {
-        "image": "./assets/images/splash-icon.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#151718"
-      }
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
