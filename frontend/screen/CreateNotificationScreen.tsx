@@ -20,6 +20,14 @@ export default function CreateNotificationScreen({ route, navigation }) {
       Alert.alert('Validation', 'Title and message are required');
       return;
     }
+    if (title.length < 3) {
+      Alert.alert('Validation', 'Title must be at least 3 characters long');
+      return;
+    }
+    if (message.length < 5) {
+      Alert.alert('Validation', 'Message must be at least 5 characters long');
+      return;
+    }
 
     try {
       if (existing) {
@@ -39,13 +47,15 @@ export default function CreateNotificationScreen({ route, navigation }) {
     container: { backgroundColor: theme.colors.background },
     label: { color: theme.colors.text },
     input: { 
-      backgroundColor: theme.colors.card, 
+      backgroundColor: theme.colors.glassCard, 
       color: theme.colors.text,
-      borderColor: theme.colors.headerBorder
+      borderColor: theme.colors.glassBorder,
+      borderWidth: 1,
     },
     typeButton: {
-      backgroundColor: theme.colors.card,
-      borderColor: theme.colors.headerBorder
+      backgroundColor: theme.colors.glassCard,
+      borderColor: theme.colors.glassBorder,
+      borderWidth: 1,
     },
     typeText: {
       color: theme.colors.text

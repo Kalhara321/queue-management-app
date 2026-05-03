@@ -20,8 +20,8 @@ const NextInLineModal = ({ visible, onClose, queueName, tokenNumber }: NextInLin
       animationType="fade"
     >
       <View style={styles.overlay}>
-        <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
-          <View style={[styles.iconCircle, { backgroundColor: theme.colors.iconWrapBg }]}>
+        <View style={[styles.modalContent, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
+          <View style={[styles.iconCircle, { backgroundColor: theme.colors.iconWrapBg, borderColor: theme.colors.glassCard }]}>
             <MaterialCommunityIcons name="bell-ring" size={40} color="white" />
           </View>
           
@@ -30,7 +30,7 @@ const NextInLineModal = ({ visible, onClose, queueName, tokenNumber }: NextInLin
             Your turn is approaching in the <Text style={{ fontWeight: 'bold' }}>{queueName}</Text> queue.
           </Text>
           
-          <View style={[styles.tokenBadge, { backgroundColor: theme.colors.background }]}>
+          <View style={[styles.tokenBadge, { backgroundColor: theme.colors.background + '80' }]}>
             <Text style={[styles.tokenLabel, { color: theme.colors.subText }]}>TOKEN</Text>
             <Text style={[styles.tokenValue, { color: theme.colors.iconWrapBg }]}>#{tokenNumber}</Text>
           </View>
@@ -54,10 +54,16 @@ const NextInLineModal = ({ visible, onClose, queueName, tokenNumber }: NextInLin
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }
+    })
   },
   modalContent: {
     width: '100%',
@@ -70,6 +76,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 10,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+      }
+    })
   },
   iconCircle: {
     width: 80,

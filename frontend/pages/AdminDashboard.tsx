@@ -123,11 +123,20 @@ const AdminDashboard = () => {
   };
 
   const handleQueueSubmit = async () => {
+    setModalError('');
     if (!queueName || !queueDetails) {
-      if (Platform.OS === 'web') window.alert('Please fill all fields');
-      else Alert.alert('Error', 'Please fill all fields');
+      setModalError('Please fill all fields');
       return;
     }
+    if (queueName.length < 3) {
+      setModalError('Queue name must be at least 3 characters long');
+      return;
+    }
+    if (queueDetails.length < 5) {
+      setModalError('Queue details must be at least 5 characters long');
+      return;
+    }
+
     try {
       if (isEditingQueue) {
         await updateQueue(queueId, { name: queueName, details: queueDetails });
@@ -215,7 +224,7 @@ const AdminDashboard = () => {
             </View>
 
             <View style={styles.statsGrid}>
-              <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
+              <View style={[styles.statCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
                 <View style={[styles.statIcon, { backgroundColor: theme.colors.iconWrapBg + '22' }]}>
                   <MaterialCommunityIcons name="bullhorn" size={24} color={theme.colors.iconWrapBg} />
                 </View>
@@ -223,7 +232,7 @@ const AdminDashboard = () => {
                 <Text style={[styles.statLabel, { color: theme.colors.subText }]}>Active Announcements</Text>
               </View>
 
-              <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
+              <View style={[styles.statCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
                 <View style={[styles.statIcon, { backgroundColor: '#4CAF50' + '22' }]}>
                   <MaterialCommunityIcons name="account-group" size={24} color="#4CAF50" />
                 </View>
@@ -231,7 +240,7 @@ const AdminDashboard = () => {
                 <Text style={[styles.statLabel, { color: theme.colors.subText }]}>Total Users</Text>
               </View>
 
-              <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
+              <View style={[styles.statCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
                 <View style={[styles.statIcon, { backgroundColor: '#FF9800' + '22' }]}>
                   <MaterialCommunityIcons name="list-status" size={24} color="#FF9800" />
                 </View>
@@ -240,7 +249,7 @@ const AdminDashboard = () => {
               </View>
             </View>
 
-            <View style={[styles.actionCard, { backgroundColor: theme.colors.card }]}>
+            <View style={[styles.actionCard, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
               <View style={styles.actionInfo}>
                 <Text style={[styles.actionTitle, { color: theme.colors.text }]}>Manage Queues</Text>
                 <Text style={[styles.actionDesc, { color: theme.colors.subText }]}>Create a new queue and define its purpose for patients.</Text>
@@ -262,7 +271,7 @@ const AdminDashboard = () => {
                 <Text style={{ color: theme.colors.subText }}>No active queues.</Text>
               ) : (
                 queues.map((item: any) => (
-                  <View key={item._id} style={[styles.listItem, { backgroundColor: theme.colors.card, borderLeftColor: '#FF9800' }]}>
+                  <View key={item._id} style={[styles.listItem, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, borderLeftColor: '#FF9800', borderLeftWidth: 4 }]}>
                     <View style={styles.listItemContent}>
                       <Text style={[styles.itemTitle, { color: theme.colors.text }]}>{item.name}</Text>
                       <Text style={[styles.itemDate, { color: theme.colors.subText }]}>{item.members?.length || 0} People in Queue</Text>
@@ -289,7 +298,7 @@ const AdminDashboard = () => {
                 <ActivityIndicator size="large" color={theme.colors.iconWrapBg} />
               ) : (
                 announcements.map((item: any) => (
-                  <View key={item._id} style={[styles.listItem, { backgroundColor: theme.colors.card, borderLeftColor: theme.colors.iconWrapBg }]}>
+                  <View key={item._id} style={[styles.listItem, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, borderLeftColor: theme.colors.iconWrapBg, borderLeftWidth: 4 }]}>
                     <View style={styles.listItemContent}>
                       <Text style={[styles.itemTitle, { color: theme.colors.text }]} numberOfLines={1}>{item.title}</Text>
                       <Text style={[styles.itemDate, { color: theme.colors.subText }]}>{new Date(item.createdAt).toLocaleDateString()}</Text>
@@ -312,7 +321,7 @@ const AdminDashboard = () => {
 
       <Modal visible={showQueueModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>{isEditingQueue ? 'Edit Queue' : 'Create New Queue'}</Text>
             
             {modalError ? (
@@ -350,7 +359,7 @@ const AdminDashboard = () => {
 
       <Modal visible={showBookingsModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.card, maxWidth: 600 }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1, maxWidth: 600 }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Manage: {selectedQueue?.name}</Text>
               <TouchableOpacity onPress={() => setShowBookingsModal(false)}>
@@ -444,7 +453,11 @@ const styles = StyleSheet.create({
     minWidth: 200,
     flex: 1,
     ...Platform.select({
-      web: { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' },
+      web: { 
+        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+      },
       android: { elevation: 3 },
       ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 }
     })
@@ -518,7 +531,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderLeftWidth: 4,
     ...Platform.select({
-      web: { boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }
+      web: { 
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }
     })
   },
   listItemContent: {
@@ -544,10 +561,16 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+      }
+    })
   },
   modalContent: {
     width: '100%',

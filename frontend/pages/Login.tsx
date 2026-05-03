@@ -15,17 +15,30 @@ const Login = () => {
   const router = useRouter();
   const { theme } = useTheme();
 
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleLogin = async () => {
     setError('');
+    
     if (!username || !password) {
       setError('Please fill in all fields');
       return;
     }
+
+    if (!validateEmail(username)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     setLoading(true);
     try {
-      // In this app, we use email for login in the backend, 
-      // but let's assume 'username' field in UI maps to email or update accordingly.
-      // Looking at backend, it checks 'email' in login.
       const res = await login(username, password);
       if (res.user.role === 'admin') {
         router.replace('/admin');
@@ -45,7 +58,14 @@ const Login = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+      <View style={[
+        styles.card, 
+        { 
+          backgroundColor: theme.colors.glassCard,
+          borderColor: theme.colors.glassBorder,
+          borderWidth: 1,
+        }
+      ]}>
         <View style={styles.header}>
           <View style={[styles.logoIcon, { backgroundColor: theme.colors.iconWrapBg }]}>
             <MaterialCommunityIcons name="lock" size={30} color="white" />
@@ -63,21 +83,22 @@ const Login = () => {
 
         <View style={styles.form}>
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Username</Text>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Email Address</Text>
             <View style={[
               styles.inputWrapper, 
               { borderColor: isFocused === 'user' ? theme.colors.iconWrapBg : theme.colors.headerBorder }
             ]}>
-              <MaterialCommunityIcons name="account" size={20} color={isFocused === 'user' ? theme.colors.iconWrapBg : theme.colors.subText} />
+              <MaterialCommunityIcons name="email" size={20} color={isFocused === 'user' ? theme.colors.iconWrapBg : theme.colors.subText} />
               <TextInput
                 style={[styles.input, { color: theme.colors.text }]}
-                placeholder="Enter username"
+                placeholder="Enter email"
                 placeholderTextColor={theme.colors.subText}
                 value={username}
                 onChangeText={setUsername}
                 onFocus={() => setIsFocused('user')}
                 onBlur={() => setIsFocused('')}
                 autoCapitalize="none"
+                keyboardType="email-address"
               />
             </View>
           </View>
@@ -145,7 +166,9 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
       web: {
-        boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
       },
     }),
   },

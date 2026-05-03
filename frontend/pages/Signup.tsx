@@ -16,12 +16,33 @@ const Signup = () => {
   const router = useRouter();
   const { theme } = useTheme();
 
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSignup = async () => {
     setError('');
+    
     if (!username || !email || !password) {
       setError('Please fill in all fields');
       return;
     }
+
+    if (username.length < 3) {
+      setError('Username must be at least 3 characters long');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     setLoading(true);
     try {
       await signup(username, email, password, 'user');
@@ -41,7 +62,14 @@ const Signup = () => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+        <View style={[
+          styles.card, 
+          { 
+            backgroundColor: theme.colors.glassCard,
+            borderColor: theme.colors.glassBorder,
+            borderWidth: 1,
+          }
+        ]}>
           <View style={styles.header}>
             <View style={[styles.logoIcon, { backgroundColor: theme.colors.iconWrapBg }]}>
               <MaterialCommunityIcons name="account-plus" size={30} color="white" />
@@ -93,6 +121,7 @@ const Signup = () => {
                   onFocus={() => setIsFocused('email')}
                   onBlur={() => setIsFocused('')}
                   keyboardType="email-address"
+                  autoCapitalize="none"
                 />
               </View>
             </View>
@@ -166,7 +195,9 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
       web: {
-        boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
       },
     }),
   },

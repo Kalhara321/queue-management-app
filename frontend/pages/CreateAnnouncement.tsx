@@ -31,8 +31,21 @@ const CreateAnnouncement = () => {
 
   const handleSubmit = async () => {
     if (!title || !message) {
-      if (Platform.OS === 'web') window.alert('Please fill in both title and message');
-      else Alert.alert('Error', 'Please fill in both title and message');
+      const msg = 'Please fill in both title and message';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Error', msg);
+      return;
+    }
+    if (title.length < 3) {
+      const msg = 'Title must be at least 3 characters long';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Error', msg);
+      return;
+    }
+    if (message.length < 5) {
+      const msg = 'Message must be at least 5 characters long';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Error', msg);
       return;
     }
 
@@ -75,7 +88,7 @@ const CreateAnnouncement = () => {
               </Text>
             </View>
 
-            <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+            <View style={[styles.card, { backgroundColor: theme.colors.glassCard, borderColor: theme.colors.glassBorder, borderWidth: 1 }]}>
               <View style={styles.form}>
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { color: theme.colors.text }]}>Announcement Title</Text>
@@ -192,7 +205,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.05)',
     ...Platform.select({
-      web: { boxShadow: '0 8px 30px rgba(0,0,0,0.06)' },
+      web: { 
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+      },
       android: { elevation: 6 },
       ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 15 }
     })

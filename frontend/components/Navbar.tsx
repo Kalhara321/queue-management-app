@@ -9,7 +9,7 @@ const Navbar = () => {
   const { theme } = useTheme();
 
   return (
-    <View style={[styles.navbar, { backgroundColor: theme.colors.headerBackground, borderBottomColor: theme.colors.headerBorder }]}>
+    <View style={[styles.navbar, { backgroundColor: theme.colors.glassCard, borderBottomColor: theme.colors.glassBorder }]}>
       <View style={styles.logoContainer}>
         <MaterialCommunityIcons name="playlist-play" size={28} color={theme.colors.iconWrapBg} />
         <Text style={[styles.logoText, { color: theme.colors.text }]}>QueueMaster</Text>
@@ -53,6 +53,8 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+        backdropFilter: 'blur(15px)',
+        WebkitBackdropFilter: 'blur(15px)',
       },
     }),
   },
