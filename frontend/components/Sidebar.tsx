@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -73,12 +73,12 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     padding: 20,
     justifyContent: 'space-between',
-    ...Platform.select({
+    ...(Platform.select({
       web: {
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }
-    })
+    }) as any)
   },
   header: {
     flexDirection: 'row',
