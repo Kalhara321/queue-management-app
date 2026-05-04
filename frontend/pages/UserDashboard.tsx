@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator, RefreshControl, Modal } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 import AnnouncementCard from '../components/AnnouncementCard';
 import { getAllNotifications } from '../services/notificationService';
 import { getAllQueues } from '../services/queueService';
@@ -30,6 +31,7 @@ const UserDashboard = () => {
   const [notificationData, setNotificationData] = useState({ queueName: '', tokenNumber: 0 });
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const fetchAllData = async () => {
     try {
@@ -116,7 +118,14 @@ const UserDashboard = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Navbar />
+      <Modal visible={showMobileMenu} transparent animationType="fade">
+        <View style={styles.mobileMenuOverlay}>
+          <View style={styles.mobileMenuContent}>
+            <Sidebar onClose={() => setShowMobileMenu(false)} />
+          </View>
+        </View>
+      </Modal>
+      <Navbar onMenuPress={() => setShowMobileMenu(true)} />
       <NextInLineModal 
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -357,6 +366,15 @@ const styles = StyleSheet.create({
   emptyContainer: {
     padding: 50,
     alignItems: 'center',
+  },
+  mobileMenuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  mobileMenuContent: {
+    width: '80%',
+    height: '100%',
+    maxWidth: 300,
   }
 });
 

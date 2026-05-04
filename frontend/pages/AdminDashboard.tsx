@@ -31,6 +31,7 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     visible: boolean;
     title: string;
@@ -237,10 +238,18 @@ const AdminDashboard = () => {
         onConfirm={() => { hideConfirm(); confirmDialog.onConfirm(); }}
         onCancel={hideConfirm}
       />
+      <Modal visible={showMobileMenu} transparent animationType="fade">
+        <View style={styles.mobileMenuOverlay}>
+          <View style={styles.mobileMenuContent}>
+            <Sidebar onClose={() => setShowMobileMenu(false)} />
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.layout}>
         {Platform.OS === 'web' && <Sidebar />}
         <View style={styles.mainContent}>
-          {Platform.OS !== 'web' && <Navbar />}
+          <Navbar onMenuPress={() => setShowMobileMenu(true)} />
           <ScrollView contentContainerStyle={styles.content}>
             <View style={styles.header}>
               <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Admin Dashboard</Text>
@@ -685,6 +694,15 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  mobileMenuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  mobileMenuContent: {
+    width: '80%',
+    height: '100%',
+    maxWidth: 300,
   }
 });
 

@@ -1,13 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const Sidebar = () => {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+const Sidebar = ({ onClose }: SidebarProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const { theme } = useTheme();
+  const isWeb = Platform.OS === 'web';
+  const { width } = Dimensions.get('window');
+  const isMobile = width < 768;
 
   const menuItems = [
     { title: 'Dashboard', icon: 'view-dashboard', href: '/admin' },
@@ -15,11 +22,31 @@ const Sidebar = () => {
     { title: 'Home', icon: 'home', href: '/dashboard' },
   ];
 
+  const handleNavigation = (href: string) => {
+    router.push(href as any);
+    if (onClose) onClose();
+  };
+
   return (
-    <View style={[styles.sidebar, { backgroundColor: theme.colors.glassCard, borderRightColor: theme.colors.glassBorder }, theme.glassBlur]}>
+    <View style={[
+      styles.sidebar, 
+      { 
+        backgroundColor: theme.colors.glassCard, 
+        borderRightColor: theme.colors.glassBorder,
+        width: isMobile && !isWeb ? '100%' : 250,
+      }, 
+      theme.glassBlur
+    ]}>
       <View style={styles.header}>
-        <MaterialCommunityIcons name="shield-account" size={32} color={theme.colors.iconWrapBg} />
-        <Text style={[styles.adminLabel, { color: theme.colors.text }]}>Admin Panel</Text>
+        <View style={styles.headerTitle}>
+          <MaterialCommunityIcons name="shield-account" size={32} color={theme.colors.iconWrapBg} />
+          <Text style={[styles.adminLabel, { color: theme.colors.text }]}>Admin Panel</Text>
+        </View>
+        {onClose && (
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.menuList}>
@@ -28,7 +55,7 @@ const Sidebar = () => {
           return (
             <TouchableOpacity
               key={item.href}
-              onPress={() => router.push(item.href)}
+              onPress={() => handleNavigation(item.href)}
               style={[
                 styles.menuItem,
                 isActive && { backgroundColor: theme.colors.background + '50' }
@@ -56,7 +83,10 @@ const Sidebar = () => {
       <View style={styles.footer}>
         <TouchableOpacity 
           style={[styles.logoutBtn, { backgroundColor: theme.colors.deleteBtnBg }]}
-          onPress={() => router.replace('/login')}
+          onPress={() => {
+            router.replace('/login');
+            if (onClose) onClose();
+          }}
         >
           <MaterialCommunityIcons name="logout" size={20} color="#FF4B4B" />
           <Text style={styles.logoutText}>Logout</Text>
@@ -68,7 +98,6 @@ const Sidebar = () => {
 
 const styles = StyleSheet.create({
   sidebar: {
-    width: 250,
     height: '100%',
     borderRightWidth: 1,
     padding: 20,
@@ -77,8 +106,16 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 40,
+  },
+  headerTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
+  },
+  closeBtn: {
+    padding: 5,
   },
   adminLabel: {
     fontSize: 18,

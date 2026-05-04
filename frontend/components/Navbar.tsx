@@ -4,24 +4,38 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const Navbar = () => {
+interface NavbarProps {
+  onMenuPress?: () => void;
+  showMenuButton?: boolean;
+}
+
+const Navbar = ({ onMenuPress, showMenuButton = true }: NavbarProps) => {
   const router = useRouter();
   const { theme } = useTheme();
 
   return (
     <View style={[styles.navbar, { backgroundColor: theme.colors.glassCard, borderBottomColor: theme.colors.glassBorder }, theme.glassBlur]}>
       <View style={styles.logoContainer}>
+        {onMenuPress && showMenuButton && (
+          <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
+            <MaterialCommunityIcons name="menu" size={28} color={theme.colors.text} />
+          </TouchableOpacity>
+        )}
         <MaterialCommunityIcons name="playlist-play" size={28} color={theme.colors.iconWrapBg} />
         <Text style={[styles.logoText, { color: theme.colors.text }]}>QueueMaster</Text>
       </View>
 
       <View style={styles.navLinks}>
-        <TouchableOpacity onPress={() => router.push('/dashboard')} style={styles.navLink}>
-          <Text style={[styles.navLinkText, { color: theme.colors.subText }]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/dashboard')} style={styles.navLink}>
-          <Text style={[styles.navLinkText, { color: theme.colors.subText }]}>Announcements</Text>
-        </TouchableOpacity>
+        {Platform.OS === 'web' && (
+          <>
+            <TouchableOpacity onPress={() => router.push('/dashboard')} style={styles.navLink}>
+              <Text style={[styles.navLinkText, { color: theme.colors.subText }]}>Home</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/dashboard')} style={styles.navLink}>
+              <Text style={[styles.navLinkText, { color: theme.colors.subText }]}>Announcements</Text>
+            </TouchableOpacity>
+          </>
+        )}
         <TouchableOpacity 
           onPress={() => router.replace('/login')} 
           style={[styles.logoutBtn, { backgroundColor: theme.colors.deleteBtnBg }]}
@@ -60,6 +74,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  menuButton: {
+    marginRight: 10,
+    padding: 5,
   },
   logoText: {
     fontSize: 20,
